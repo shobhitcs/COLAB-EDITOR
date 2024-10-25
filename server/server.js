@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const http = require('http');
 const morgan = require('morgan');
 require('dotenv').config();
 
@@ -11,22 +10,22 @@ const documentRoutes = require('./routes/documents');
 
 const app = express();
 
-app.use(morgan('dev'));
-app.use(cors());
-app.use(bodyParser.json());
 
 const socketIo = require('socket.io');
-const server = http.createServer(app);
-const io = socketIo(server);
-
+const { broadcast } = require('./utilities/collab');
+const io = socketIo(9000, {
+  cors: {
+    origin: "http://localhost:3000", // Replace with your frontend URL
+    methods: ["GET", "POST"]
+  }
+});
 // Handle socket connections
 io.on('connection', (socket) => {
   console.log('A user connected');
 
   // Listen for content updates
   socket.on('documentChange', (data) => {
-    // Broadcast the updated content to all connected clients except the sender
-    socket.broadcast.emit('documentUpdated', data);
+    broadcast(data,socket);
   });
 
   // Handle disconnections
@@ -35,6 +34,9 @@ io.on('connection', (socket) => {
   });
 });
 
+app.use(morgan('dev'));
+app.use(cors());
+app.use(bodyParser.json());
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))

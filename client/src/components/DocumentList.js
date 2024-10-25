@@ -45,6 +45,7 @@ const DocumentList = () => {
   const handleShareDocument = () => {
     const usernamesArray = collaboratorUsernames.split(',').map(username => username.trim());
     dispatch(addCollaborators({ documentId: selectedDocumentId, usernames: usernamesArray }));
+    console.log('Added collaborator')
     setIsShareModalOpen(false); // Close share modal after sharing
     setCollaboratorUsernames(''); // Reset input field
   };

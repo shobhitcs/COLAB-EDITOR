@@ -180,37 +180,37 @@ const documentSlice = createSlice({
         state.loading = false;  // Stop loading when there's an error
       })
 
-      // Handling addCollaborators action
-      .addCase(addCollaborators.pending, (state) => {
-        state.loading = true; // Start loading when request is sent
-      })
-    .addCase(addCollaborators.fulfilled, (state, action) => {
-      const index = state.documents.findIndex(doc => doc._id === action.payload._id);
-      if (index !== -1) {
-        state.documents[index] = action.payload; // Update the document with collaborators
-      }
-      state.loading = false; // Stop loading when collaborators are added
-    })
-    .addCase(addCollaborators.rejected, (state, action) => {
-      state.error = action.payload; // Store the error in the state
-      state.loading = false; // Stop loading when there's an error
-    })
+    //   // Handling addCollaborators action
+    //   .addCase(addCollaborators.pending, (state) => {
+    //     state.loading = true; // Start loading when request is sent
+    //   })
+    // .addCase(addCollaborators.fulfilled, (state, action) => {
+    //   const index = state.documents.findIndex(doc => doc._id === action.payload._id);
+    //   if (index !== -1) {
+    //     state.documents[index] = action.payload; // Update the document with collaborators
+    //   }
+    //   state.loading = false; // Stop loading when collaborators are added
+    // })
+    // .addCase(addCollaborators.rejected, (state, action) => {
+    //   state.error = action.payload; // Store the error in the state
+    //   state.loading = false; // Stop loading when there's an error
+    // })
 
-    // Handling removeCollaborator action
-    .addCase(removeCollaborator.pending, (state) => {
-      state.loading = true; // Start loading when request is sent
-    })
-    .addCase(removeCollaborator.fulfilled, (state, action) => {
-      const index = state.documents.findIndex(doc => doc._id === action.payload._id);
-      if (index !== -1) {
-        state.documents[index] = action.payload; // Update the document without the removed collaborator
-      }
-      state.loading = false; // Stop loading when collaborator is removed
-    })
-    .addCase(removeCollaborator.rejected, (state, action) => {
-      state.error = action.payload; // Store the error in the state
-      state.loading = false; // Stop loading when there's an error
-    });
+    // // Handling removeCollaborator action
+    // .addCase(removeCollaborator.pending, (state) => {
+    //   state.loading = true; // Start loading when request is sent
+    // })
+    // .addCase(removeCollaborator.fulfilled, (state, action) => {
+    //   const index = state.documents.findIndex(doc => doc._id === action.payload._id);
+    //   if (index !== -1) {
+    //     state.documents[index] = action.payload; // Update the document without the removed collaborator
+    //   }
+    //   state.loading = false; // Stop loading when collaborator is removed
+    // })
+    // .addCase(removeCollaborator.rejected, (state, action) => {
+    //   state.error = action.payload; // Store the error in the state
+    //   state.loading = false; // Stop loading when there's an error
+    // });
 },
 });
 
