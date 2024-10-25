@@ -45,7 +45,6 @@ const DocumentEditor = () => {
     console.log(userId,documentId,123);
 
     s.emit('joinDocument', { documentId, userId });
-    
     // Listen for document updates from the server
     s.on('documentUpdated', (data) => {
       if (quillRef.current) {
@@ -57,12 +56,12 @@ const DocumentEditor = () => {
       }
     });
 
-    s.on('documentUpdated', (data) => {
+    s.on('documentContent', (data) => {
       if (quillRef.current) {
         const editor = quillRef.current.getEditor();
-        console.log('Received delta:', data.delta);
-        // Apply the incoming delta to the editor
-        editor.updateContents(data.delta);
+        // Set the initial content of the editor
+        editor.setContents(data.content);
+        setEditorContent(data.content); // Update local state if needed
       }
     });
 
