@@ -2,11 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; // Import Quill's CSS
 import { io } from 'socket.io-client';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 const DocumentEditor = () => {
   const [editorContent, setEditorContent] = useState('');
   const [socket, setSocket] = useState(null);
   const quillRef = useRef(null);  // Create a ref for ReactQuill
+
+
+  const userId = useSelector(state => state.auth.user?._id);
+  const { id: documentId } = useParams(); // Get documentId from route parameter
 
   // Fullscreen editor container styling
   const editorContainerStyle = {
@@ -36,12 +42,25 @@ const DocumentEditor = () => {
     const s = io('http://localhost:9000');  // Connect to the Socket.IO server on port 9000
     setSocket(s);
 
+    console.log(userId,documentId,123);
+
+    s.emit('joinDocument', { documentId, userId });
+    
     // Listen for document updates from the server
     s.on('documentUpdated', (data) => {
       if (quillRef.current) {
         // Access the Quill instance using the ref
         const editor = quillRef.current.getEditor();
+        console.log(data.delta);
+        // Apply the incoming delta to the editor
+        editor.updateContents(data.delta);
+      }
+    });
 
+    s.on('documentUpdated', (data) => {
+      if (quillRef.current) {
+        const editor = quillRef.current.getEditor();
+        console.log('Received delta:', data.delta);
         // Apply the incoming delta to the editor
         editor.updateContents(data.delta);
       }
@@ -51,7 +70,7 @@ const DocumentEditor = () => {
     return () => {
       s.disconnect(); // Prevents multiple connection issues
     };
-  }, []);
+  }, [documentId]);
 
   return (
     <div style={editorContainerStyle}>

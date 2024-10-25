@@ -12,7 +12,7 @@ const app = express();
 
 
 const socketIo = require('socket.io');
-const { broadcast } = require('./utilities/collab');
+const { broadcast, joindocument } = require('./utilities/collab');
 const io = socketIo(9000, {
   cors: {
     origin: "http://localhost:3000", // Replace with your frontend URL
@@ -22,6 +22,12 @@ const io = socketIo(9000, {
 // Handle socket connections
 io.on('connection', (socket) => {
   console.log('A user connected');
+
+  socket.on('joinDocument', async ({ documentId, userId }) => {
+    await joindocument(documentId, userId, socket);
+    // const roomSize = io.sockets.adapter.rooms.get(documentId)?.size || 0;
+    // console.log(`Number of users in document ${documentId}: ${roomSize}`);
+  });
 
   // Listen for content updates
   socket.on('documentChange', (data) => {
