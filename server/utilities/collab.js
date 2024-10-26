@@ -30,7 +30,7 @@ const broadcast = (data, socket) => {
     if (!updateTimer) {
         updateTimer = setTimeout(() => {
             applyDeltasAndUpdateDocument();
-        },1); // Adjust time interval as needed
+        }, 1); // Adjust time interval as needed
     }
 };
 
@@ -114,7 +114,7 @@ const joindocument = async (documentId, userId, socket) => {
             }
             // console.log('locks', lockedSections[documentId]);
             // Optionally send the current document state to the user
-            socket.emit('documentContent', { content: document.text, locks : lockedSections[documentId] });
+            socket.emit('documentContent', { content: document.text, locks: lockedSections[documentId] });
 
         } else {
             socket.emit('error', 'You do not have access to this document');
@@ -137,4 +137,23 @@ const locksection = (documentId, range, userId, io) => {
     io.to(documentId).emit('lockUpdate', { lockedRanges: lockedSections[documentId] });
 }
 
-module.exports = { broadcast, joindocument, locksection };
+
+const unlocksection = (documentId, range, userId, io) => {
+    // Ensure there are locked sections for the given document
+    if (!lockedSections[documentId]) {
+        return;
+    }
+
+    // Find the matching lock and remove it
+    lockedSections[documentId] = lockedSections[documentId].filter((lock) => {
+        // Check if lock matches the range and is owned by the same user
+        return !(lock.index === range.index && lock.length === range.length && lock.userId === userId);
+    });
+
+    // Broadcast updated locks to all clients in the document room
+    io.to(documentId).emit('lockUpdate', { lockedRanges: lockedSections[documentId] });
+};
+
+
+
+module.exports = { broadcast, joindocument, locksection, unlocksection };

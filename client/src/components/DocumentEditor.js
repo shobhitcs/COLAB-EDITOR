@@ -16,9 +16,6 @@ const DocumentEditor = () => {
 
   const handleEditorChange = (content, delta, source) => {
     setEditorContent(content);
-    if (socket && source === 'user') {
-      socket.emit('documentChange', { documentId, delta });
-    }
   };
 
   const handleLockSection = () => {
@@ -48,6 +45,16 @@ const DocumentEditor = () => {
     }
   };
 
+  const handleUnlockSection = () => {
+    console.log('Attempting to unlock section');
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      const range = editor.getSelection();
+      console.log('Selected range to unlock:', range);
+
+      socket.emit('unlockSection', { documentId, range, userId });
+    }
+  }
 
   useEffect(() => {
     const s = io('http://localhost:9000');
@@ -68,6 +75,7 @@ const DocumentEditor = () => {
         editor.setContents(data.content);
         setEditorContent(data.content);
         setLockedRanges(data.locks);
+        // console.log('lock added successfully')
       }
     });
 
@@ -82,12 +90,81 @@ const DocumentEditor = () => {
     };
   }, [documentId]);
 
+  // Highlight locked sections with a gray background
   useEffect(() => {
     if (quillRef.current) {
       const editor = quillRef.current.getEditor();
+      editor.formatText(0, editor.getLength(), 'background', false); // Reset background for entire editor
+
       lockedRanges.forEach(range => {
-        editor.formatText(range.index, range.length, 'background', '#e0e0e0'); // gray background
-        editor.disable(); // Disable editing on locked sections
+        editor.formatText(range.index, range.length, 'background', '#e0e0e0'); // Gray background for locked ranges
+      });
+    }
+  }, [lockedRanges, editorContent]);
+
+  // Prevent edits on locked sections
+  useEffect(() => {
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      editor.on('text-change', (delta, oldDelta, source) => {
+        if (source !== 'user') return;
+
+        console.log('delta:', delta, 'old delta:', oldDelta, 'source:', source, socket);
+        console.log('ops', delta.ops);
+
+        let index = 0; // Start from the beginning of the document
+        let changeIndices = []; // Array to store index ranges for each change (insert or delete)
+
+        // Step 1: Calculate the index of each change operation in delta
+        delta.ops.forEach((op) => {
+          if (op.retain) {
+            // Retain advances the index without making changes
+            index += op.retain;
+          } else if (op.insert) {
+            // Capture the starting index and length of insert
+            const insertEnd = index + (typeof op.insert === 'string' ? op.insert.length : 1);
+            changeIndices.push({ start: index, end: insertEnd });
+            index = insertEnd; // Update index position after insert
+          } else if (op.delete) {
+            // Capture the range of delete operation
+            const deleteEnd = index + op.delete;
+            changeIndices.push({ start: index, end: deleteEnd });
+            // Note: index remains the same after delete as it removes characters
+          }
+        });
+
+        console.log('Calculated change indices:', changeIndices);
+
+        // Step 2: Check if any change overlaps with locked ranges
+        let invalidChange = false;
+
+        changeIndices.forEach(change => {
+          lockedRanges.forEach(range => {
+            console.log(change.end, range.index, change.start, range.index + range.length);
+            const isOutsideRange = (change.end <= range.index || change.start >= range.index + range.length);
+            console.log(isOutsideRange, change, range);
+            // If the change falls within the locked range, mark as invalid
+            if (!isOutsideRange) {
+              invalidChange = true;
+            }
+          });
+        });
+
+        console.log('invalid change:', invalidChange)
+        // If an invalid change was attempted, revert to the old delta
+        if (invalidChange) {
+          const originalContent = oldDelta.ops.map(op => (typeof op.insert === 'string' ? op.insert : '')).join('');
+          console.log('original content:', originalContent);
+          // editor.setContents(oldDelta);
+          setEditorContent(originalContent);
+          console.log('text should not change')
+        }
+        else {
+          if (socket && source === 'user') {
+            console.log('transmitted');
+            socket.emit('documentChange', { documentId, delta });
+          }
+        }
       });
     }
   }, [lockedRanges]);
@@ -106,7 +183,21 @@ const DocumentEditor = () => {
             cursor: 'pointer'
           }}
         >
-          🔒
+          🔒 Lock
+        </button>
+        <button
+          onClick={handleUnlockSection}
+          style={{
+            marginLeft: '10px',
+            padding: '8px 16px',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          🗝️ Free
         </button>
       </div>
       <ReactQuill
@@ -114,7 +205,7 @@ const DocumentEditor = () => {
         value={editorContent}
         onChange={handleEditorChange}
         theme="snow"
-        style={{ height: 'calc(100% - 40px)', flexGrow: 1 }} // Leave space for the button
+        style={{ height: 'calc(100% - 40px)', flexGrow: 1 }}
         placeholder="Start writing your document here..."
       />
     </div>

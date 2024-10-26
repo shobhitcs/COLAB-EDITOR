@@ -13,7 +13,7 @@ const app = express();
 
 
 const socketIo = require('socket.io');
-const { broadcast, joindocument, locksection } = require('./utilities/collab');
+const { broadcast, joindocument, locksection, unlocksection } = require('./utilities/collab');
 const io = socketIo(9000, {
   cors: {
     origin: "http://localhost:3000", // Replace with your frontend URL
@@ -37,6 +37,10 @@ io.on('connection', (socket) => {
 
   socket.on('lockSection', ({ documentId, range, userId }) => {
     locksection(documentId, range, userId,io);
+  });
+  
+  socket.on('unlockSection', ({ documentId, range, userId }) => {
+    unlocksection(documentId, range, userId,io);
   });
 
   // Handle disconnections
