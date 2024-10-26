@@ -109,9 +109,12 @@ const joindocument = async (documentId, userId, socket) => {
         if (isOwner || isCollaborator) {
             // Join a room specific to this document
             socket.join(documentId);
-
+            if (!lockedSections[documentId]) {
+                lockedSections[documentId] = [];
+            }
+            // console.log('locks', lockedSections[documentId]);
             // Optionally send the current document state to the user
-            socket.emit('documentContent', { content: document.text });
+            socket.emit('documentContent', { content: document.text, locks : lockedSections[documentId] });
 
         } else {
             socket.emit('error', 'You do not have access to this document');

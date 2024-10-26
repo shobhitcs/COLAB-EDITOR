@@ -22,17 +22,32 @@ const DocumentEditor = () => {
   };
 
   const handleLockSection = () => {
-    console.log('lock section');
+    console.log('Attempting to lock section');
     if (quillRef.current) {
       const editor = quillRef.current.getEditor();
       const range = editor.getSelection();
-      console.log('lock range',range);
-      if (range) {
-        // Lock the selected range
-        socket.emit('lockSection', { documentId, range, userId });
+      console.log('Selected range to lock:', range);
+
+      if (range && range.length > 0) { // Ensure a valid non-zero length range is selected
+        // Check for overlap with any existing locked ranges
+        const hasOverlap = lockedRanges.some(lockedRange => {
+          const isOverlap = !(range.index + range.length <= lockedRange.index || range.index >= lockedRange.index + lockedRange.length);
+          return isOverlap;
+        });
+
+        if (hasOverlap) {
+          alert('Selected range overlaps with an already locked section. Please select a different range.');
+        } else {
+          // Lock the selected range if there's no overlap
+          socket.emit('lockSection', { documentId, range, userId });
+          console.log('Range locked:', range);
+        }
+      } else {
+        alert('Please select a valid range of text to lock.');
       }
     }
   };
+
 
   useEffect(() => {
     const s = io('http://localhost:9000');
@@ -52,6 +67,7 @@ const DocumentEditor = () => {
         const editor = quillRef.current.getEditor();
         editor.setContents(data.content);
         setEditorContent(data.content);
+        setLockedRanges(data.locks);
       }
     });
 
@@ -78,7 +94,7 @@ const DocumentEditor = () => {
 
   return (
     <div style={{ height: '80vh', padding: '10px 50px' }}>
-      <div style={{  margin: '10px 0px' }}>
+      <div style={{ margin: '10px 0px' }}>
         <button
           onClick={handleLockSection}
           style={{
