@@ -13,7 +13,7 @@ const app = express();
 
 
 const socketIo = require('socket.io');
-const { broadcast, joindocument } = require('./utilities/collab');
+const { broadcast, joindocument, locksection } = require('./utilities/collab');
 const io = socketIo(9000, {
   cors: {
     origin: "http://localhost:3000", // Replace with your frontend URL
@@ -32,7 +32,11 @@ io.on('connection', (socket) => {
 
   // Listen for content updates
   socket.on('documentChange', (data) => {
-    broadcast(data,socket);
+    broadcast(data, socket);
+  });
+
+  socket.on('lockSection', ({ documentId, range, userId }) => {
+    locksection(documentId, range, userId,io);
   });
 
   // Handle disconnections
@@ -52,7 +56,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
-app.use('/api/code',codeRoutes);
+app.use('/api/code', codeRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

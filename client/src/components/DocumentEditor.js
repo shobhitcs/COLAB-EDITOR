@@ -1,55 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css'; // Import Quill's CSS
+import 'react-quill/dist/quill.snow.css';
 import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 const DocumentEditor = () => {
   const [editorContent, setEditorContent] = useState('');
+  const [lockedRanges, setLockedRanges] = useState([]); // Track locked sections
   const [socket, setSocket] = useState(null);
-  const quillRef = useRef(null);  // Create a ref for ReactQuill
-
+  const quillRef = useRef(null);
 
   const userId = useSelector(state => state.auth.user?._id);
-  const { id: documentId } = useParams(); // Get documentId from route parameter
+  const { id: documentId } = useParams();
 
-  // Fullscreen editor container styling
-  const editorContainerStyle = {
-    height: '80vh',  // Full screen height
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '10px 50px',  // Adds 50px space on left and right
-  };
-
-  // Set the height of the ReactQuill editor
-  const editorStyle = {
-    height: '100%',  // Take up all available height of the container
-    flexGrow: 1,     // Allow the editor to grow and fill the space
-  };
-
-  // Handle changes in the document editor
   const handleEditorChange = (content, delta, source) => {
     setEditorContent(content);
     if (socket && source === 'user') {
-      // Emit the document change to the server only if it comes from user actions
       socket.emit('documentChange', { documentId, delta });
     }
   };
 
+  const handleLockSection = () => {
+    console.log('lock section');
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      const range = editor.getSelection();
+      console.log('lock range',range);
+      if (range) {
+        // Lock the selected range
+        socket.emit('lockSection', { documentId, range, userId });
+      }
+    }
+  };
+
   useEffect(() => {
-    // Create a new socket connection when the component mounts
-    const s = io('http://localhost:9000');  // Connect to the Socket.IO server on port 9000
+    const s = io('http://localhost:9000');
     setSocket(s);
 
-
     s.emit('joinDocument', { documentId, userId });
-    // Listen for document updates from the server
+
     s.on('documentUpdated', (data) => {
       if (quillRef.current) {
-        // Access the Quill instance using the ref
         const editor = quillRef.current.getEditor();
-        // Apply the incoming delta to the editor
         editor.updateContents(data.delta);
       }
     });
@@ -57,26 +50,55 @@ const DocumentEditor = () => {
     s.on('documentContent', (data) => {
       if (quillRef.current) {
         const editor = quillRef.current.getEditor();
-        // Set the initial content of the editor
         editor.setContents(data.content);
-        setEditorContent(data.content); // Update local state if needed
+        setEditorContent(data.content);
       }
     });
 
-    // Cleanup function to disconnect the socket when the component unmounts
+    // Handle locked sections from other users
+    s.on('lockUpdate', (data) => {
+      setLockedRanges(data.lockedRanges);
+      console.log('locked ranges', data.lockedRanges);
+    });
+
     return () => {
-      s.disconnect(); // Prevents multiple connection issues
+      s.disconnect();
     };
   }, [documentId]);
 
+  useEffect(() => {
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      lockedRanges.forEach(range => {
+        editor.formatText(range.index, range.length, 'background', '#e0e0e0'); // gray background
+        editor.disable(); // Disable editing on locked sections
+      });
+    }
+  }, [lockedRanges]);
+
   return (
-    <div style={editorContainerStyle}>
+    <div style={{ height: '80vh', padding: '10px 50px' }}>
+      <div style={{  margin: '10px 0px' }}>
+        <button
+          onClick={handleLockSection}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          🔒
+        </button>
+      </div>
       <ReactQuill
-        ref={quillRef}  // Attach the ref to the ReactQuill component
+        ref={quillRef}
         value={editorContent}
         onChange={handleEditorChange}
         theme="snow"
-        style={editorStyle}  // Set the editor height
+        style={{ height: 'calc(100% - 40px)', flexGrow: 1 }} // Leave space for the button
         placeholder="Start writing your document here..."
       />
     </div>

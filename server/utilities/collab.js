@@ -5,6 +5,8 @@ const { Document } = require('../models/model');
 
 const documents = {};  //Documents
 
+const lockedSections = {}; //Locks of documents
+
 // Track accumulated deltas per document
 const accumulatedDeltas = {}; // { documentId: [deltas] }
 let updateTimer = null; // Timer to batch updates at intervals
@@ -28,7 +30,7 @@ const broadcast = (data, socket) => {
     if (!updateTimer) {
         updateTimer = setTimeout(() => {
             applyDeltasAndUpdateDocument();
-        }, 5000); // Adjust time interval as needed
+        },1); // Adjust time interval as needed
     }
 };
 
@@ -120,4 +122,16 @@ const joindocument = async (documentId, userId, socket) => {
     }
 }
 
-module.exports = { broadcast, joindocument };
+
+const locksection = (documentId, range, userId, io) => {
+    if (!lockedSections[documentId]) {
+        lockedSections[documentId] = [];
+    }
+    // Add the lock range
+    lockedSections[documentId].push({ ...range, userId });
+
+    // Notify all users in the document room
+    io.to(documentId).emit('lockUpdate', { lockedRanges: lockedSections[documentId] });
+}
+
+module.exports = { broadcast, joindocument, locksection };
