@@ -33,7 +33,7 @@ const DocumentEditor = () => {
     setEditorContent(content);
     if (socket && source === 'user') {
       // Emit the document change to the server only if it comes from user actions
-      socket.emit('documentChange', { delta });
+      socket.emit('documentChange', { documentId, delta });
     }
   };
 
@@ -42,7 +42,6 @@ const DocumentEditor = () => {
     const s = io('http://localhost:9000');  // Connect to the Socket.IO server on port 9000
     setSocket(s);
 
-    console.log(userId,documentId,123);
 
     s.emit('joinDocument', { documentId, userId });
     // Listen for document updates from the server
@@ -50,7 +49,6 @@ const DocumentEditor = () => {
       if (quillRef.current) {
         // Access the Quill instance using the ref
         const editor = quillRef.current.getEditor();
-        console.log(data.delta);
         // Apply the incoming delta to the editor
         editor.updateContents(data.delta);
       }

@@ -24,7 +24,7 @@ io.on('connection', (socket) => {
   console.log('A user connected');
 
   socket.on('joinDocument', async ({ documentId, userId }) => {
-    await joindocument(documentId, userId, socket);
+    joindocument(documentId, userId, socket);
     // const roomSize = io.sockets.adapter.rooms.get(documentId)?.size || 0;
     // console.log(`Number of users in document ${documentId}: ${roomSize}`);
   });
