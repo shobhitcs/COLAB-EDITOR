@@ -108,7 +108,7 @@ const DocumentEditor = () => {
       const editor = quillRef.current.getEditor();
       editor.on('text-change', (delta, oldDelta, source) => {
         if (source !== 'user') return;
-
+        console.log('lock renages123456', lockedRanges);
         console.log('delta:', delta, 'old delta:', oldDelta, 'source:', source, socket);
         console.log('ops', delta.ops);
 
@@ -137,7 +137,7 @@ const DocumentEditor = () => {
 
         // Step 2: Check if any change overlaps with locked ranges
         let invalidChange = false;
-
+        console.log('locked ranges:', lockedRanges);
         changeIndices.forEach(change => {
           lockedRanges.forEach(range => {
             console.log(change.end, range.index, change.start, range.index + range.length);
@@ -166,6 +166,10 @@ const DocumentEditor = () => {
           }
         }
       });
+      // Cleanup function to remove the event listener
+      return () => {
+        editor.off('text-change');
+      };
     }
   }, [lockedRanges]);
 

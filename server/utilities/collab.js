@@ -35,7 +35,7 @@ const broadcast = (data, socket) => {
 };
 
 // Apply deltas and update document in the database
-const applyDeltasAndUpdateDocument = async () => {
+const applyDeltasAndUpdateDocument = () => {
     for (const [documentId, deltas] of Object.entries(accumulatedDeltas)) {
         if (deltas.length === 0) continue; // Skip if no deltas
 
