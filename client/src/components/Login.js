@@ -35,10 +35,10 @@ const Login = () => {
 
   return (
     <div className="container mx-auto mt-8 max-w-md">
-      <h1 className="text-3xl font-bold mb-4">Login</h1>
+      <h1 className="text-3xl font-bold mb-4" style={{fontFamily: "Ubuntu, sans-serif",}}>Login</h1>
       <form onSubmit={onSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email" style={{fontFamily: "Barlow, sans-serif",}}>
             Email
           </label>
           <input
@@ -53,7 +53,7 @@ const Login = () => {
           />
         </div>
         <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password" style={{fontFamily: "Barlow, sans-serif",}}>
             Password
           </label>
           <input
@@ -73,7 +73,7 @@ const Login = () => {
         <div className="flex items-center justify-between">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
+            type="submit" style={{fontFamily: "Barlow, sans-serif",}}
           >
             Sign In
           </button>

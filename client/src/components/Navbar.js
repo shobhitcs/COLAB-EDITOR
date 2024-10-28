@@ -17,7 +17,7 @@ const Navbar = () => {
     <nav className="bg-gray-900 shadow-lg p-4">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="text-white text-3xl font-bold tracking-wide">
+        <Link to="/" className="text-white text-3xl font-bold tracking-wide" style={{ fontFamily: "Righteous, sans-serif",marginLeft: '40px' }}>
           Collab-Editor
         </Link>
 
@@ -25,10 +25,10 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-6">
           {isAuthenticated ? (
             <>
-              <span className="text-gray-300">Welcome, {user && user.username}</span>
+              <span className="text-gray-300" style={{fontFamily: "Monda, sans-serif",}}>Welcome, {user && user.username}</span>
               <button
                 onClick={onLogout}
-                className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full transition-transform transform hover:scale-105"
+                className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full transition-transform transform hover:scale-105" style={{fontFamily: "Maven Pro, sans-serif",}}
               >
                 Logout
               </button>
@@ -37,13 +37,13 @@ const Navbar = () => {
             <>
               <Link
                 to="/login"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full transition-transform transform hover:scale-105"
+                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full transition-transform transform hover:scale-105" style={{fontFamily: "Maven Pro, sans-serif",}}
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-full transition-transform transform hover:scale-105"
+                className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-full transition-transform transform hover:scale-105" style={{fontFamily: "Maven Pro, sans-serif",}}
               >
                 Register
               </Link>
@@ -67,13 +67,13 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden mt-4 space-y-2">
+        <div className="md:hidden mt-4 space-y-2" >
           {isAuthenticated ? (
             <>
-              <span className="text-gray-300 block text-center">Welcome, {user && user.username}</span>
+              <span className="text-gray-300 block text-center" >Welcome, {user && user.username}</span>
               <button
                 onClick={onLogout}
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full"
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-full" style={{fontFamily: "Maven Pro, sans-serif",}}
               >
                 Logout
               </button>
@@ -82,13 +82,13 @@ const Navbar = () => {
             <>
               <Link
                 to="/login"
-                className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full text-center"
+                className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-full text-center" style={{fontFamily: "Maven Pro, sans-serif",}}
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="block w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-full text-center"
+                className="block w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-full text-center" style={{fontFamily: "Maven Pro, sans-serif",}}
               >
                 Register
               </Link>

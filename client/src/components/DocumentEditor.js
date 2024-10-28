@@ -200,6 +200,8 @@ const DocumentEditor = () => {
           editor.setContents(oldDelta);
           setEditorContent(originalContent);
           // console.log('text should not change')
+          // Display an alert indicating the section is locked
+          alert("This section is already locked by another user. Your changes have been reverted.");
         }
         else {
           if (socket && source === 'user') {
@@ -305,13 +307,13 @@ const DocumentEditor = () => {
         {/* Displaying user's lock color */}
         <span style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
           <span style={{ width: '20px', height: '20px', backgroundColor: userLockColor, marginRight: '8px', border: '1px solid gray' }} />
-          <span>Your Lock</span>
+          <span style={{fontFamily: "Ubuntu, sans-serif",}}>Your Lock</span>
         </span>
 
         {/* Displaying other users' lock color */}
         <span style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
           <span style={{ width: '20px', height: '20px', backgroundColor: otherUserLockColor, marginRight: '8px', border: '1px solid gray' }} />
-          <span>Other User's Lock</span>
+          <span style={{fontFamily: "Ubuntu, sans-serif",}}>Other User's Lock</span>
         </span>
 
         {/* Buttons for locking and unlocking sections */}

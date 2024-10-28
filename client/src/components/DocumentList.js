@@ -79,14 +79,14 @@ const DocumentList = () => {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 mt-8">
-      <h1 className="text-4xl font-extrabold mb-6 text-gray-800 text-center">Your Documents</h1>
+      <h1 className="text-4xl font-extrabold mb-6 text-gray-800 text-center" style={{fontFamily: "Maven Pro, sans-serif",}}>Your Documents</h1>
 
       {/* Create Button */}
       <div className="flex justify-center mb-8">
         <button
           onClick={() => setIsCreateModalOpen(true)} // Open create modal on click
           className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105"
-          aria-label="Create new document"
+          aria-label="Create new document" style={{fontFamily: "Maven Pro, sans-serif",}}
         >
           + Create New Document
         </button>
@@ -101,7 +101,7 @@ const DocumentList = () => {
             className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
           >
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-semibold text-gray-800 truncate">
+              <h2 className="text-lg font-semibold text-gray-800 truncate" style={{fontFamily: "Maven Pro, sans-serif",}}>
                 {doc.title}
               </h2>
               <div>
@@ -112,7 +112,7 @@ const DocumentList = () => {
                     setIsShareModalOpen(true); // Open share modal
                   }}
                   className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-full transition-transform transform hover:scale-105 mr-2"
-                  aria-label={`Share document ${doc.title}`}
+                  aria-label={`Share document ${doc.title}`} style={{fontFamily: "Maven Pro, sans-serif",}}
                 >
                   Share
                 </button>
@@ -123,13 +123,13 @@ const DocumentList = () => {
                     setIsDeleteConfirmModalOpen(true); // Open delete confirmation modal
                   }}
                   className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-full transition-transform transform hover:scale-105"
-                  aria-label={`Delete document ${doc.title}`}
+                  aria-label={`Delete document ${doc.title}`} style={{fontFamily: "Maven Pro, sans-serif",}}
                 >
                   Delete
                 </button>
               </div>
             </div>
-            <span className="text-gray-500 text-sm">
+            <span className="text-gray-500 text-sm" style={{fontFamily: "Monda, sans-serif",}}>
               Owner: {doc.ownerUsername} {/* Display the owner's username directly */}
             </span>
           </li>
@@ -139,7 +139,7 @@ const DocumentList = () => {
       {/* Modal for creating a new document */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{fontFamily: "Barlow, sans-serif",}}>
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Create New Document</h2>
             <input
               type="text"
@@ -170,7 +170,7 @@ const DocumentList = () => {
       {/* Modal for sharing document */}
       {isShareModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{fontFamily: "Barlow, sans-serif",}}>
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Share Document</h2>
             <input
               type="text"
@@ -201,7 +201,7 @@ const DocumentList = () => {
       {/* Modal for delete confirmation */}
       {isDeleteConfirmModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{fontFamily: "Barlow, sans-serif",}}>
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
             <p>Are you sure you want to delete this document? This action cannot be undone.</p>
             <div className="flex justify-end space-x-4 mt-4">

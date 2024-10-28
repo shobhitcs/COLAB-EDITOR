@@ -41,10 +41,10 @@ const Register = () => {
 
   return (
     <div className="container mx-auto mt-8 max-w-md">
-      <h1 className="text-3xl font-bold mb-4">Register</h1>
+      <h1 className="text-3xl font-bold mb-4" style={{fontFamily: "Ubuntu, sans-serif",}}>Register</h1>
       <form onSubmit={onSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username" style={{fontFamily: "Barlow, sans-serif",}}>
             Username
           </label>
           <input
@@ -59,7 +59,7 @@ const Register = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email" style={{fontFamily: "Barlow, sans-serif",}}>
             Email
           </label>
           <input
@@ -74,7 +74,7 @@ const Register = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password" style={{fontFamily: "Barlow, sans-serif",}}>
             Password
           </label>
           <input
@@ -89,7 +89,7 @@ const Register = () => {
           />
         </div>
         <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password2">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password2" style={{fontFamily: "Barlow, sans-serif",}}>
             Confirm Password
           </label>
           <input
@@ -109,7 +109,7 @@ const Register = () => {
         <div className="flex items-center justify-between">
           <button
             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
+            type="submit" style={{fontFamily: "Barlow, sans-serif",}}
           >
             Register
           </button>
