@@ -11,8 +11,25 @@ const lockedSections = {}; //Locks of documents
 const accumulatedDeltas = {}; // { documentId: [deltas] }
 let updateTimer = null; // Timer to batch updates at intervals
 
+
+const areArraysEqual = (arr1, arr2) => {
+    // Check if both are arrays
+    if (!Array.isArray(arr1) || !Array.isArray(arr2)) return false;
+
+    // Check length
+    if (arr1.length !== arr2.length) return false;
+
+    // Check each element
+    for (let i = 0; i < arr1.length; i++) {
+        if (JSON.stringify(arr1[i]) !== JSON.stringify(arr2[i])) {
+            return false; // Objects differ
+        }
+    }
+
+    return true; // All checks passed, arrays are equal
+};
 // Broadcast function
-const broadcast = (data, socket) => {
+const broadcast = (data, socket, io) => {
     const { documentId, delta } = data;
 
     // Initialize document-specific deltas array if it doesn't exist
@@ -23,8 +40,19 @@ const broadcast = (data, socket) => {
     // Add the delta to the document's accumulated deltas
     accumulatedDeltas[documentId].push(delta);
 
+    // Adjust locked sections based on the delta changes
+    const newlockedRanges = adjustLockedSections(documentId, delta);
+
+    if (!areArraysEqual(newlockedRanges, lockedSections[documentId])) {
+        lockedSections[documentId] = newlockedRanges;
+        // console.log('transmitting new locks');
+        io.to(documentId).emit('lockUpdate', { lockedRanges: lockedSections[documentId] });
+    }
     // Broadcast delta to other connected clients
     socket.to(documentId).emit('documentUpdated', { delta });
+
+    // console.log('old locks', lockedSections[documentId], 'new locks', newlockedRanges);
+
 
     // Set up a batch update to the database every 5 seconds if not already scheduled
     if (!updateTimer) {
@@ -32,6 +60,48 @@ const broadcast = (data, socket) => {
             applyDeltasAndUpdateDocument();
         }, 1); // Adjust time interval as needed
     }
+};
+
+// Function to adjust the locked positions based on delta changes
+const adjustLockedSections = (documentId, delta) => {
+    // Get the locked sections for the document
+    const lockedRanges = (lockedSections[documentId] || []).map(lock => ({ ...lock }));
+
+
+    let index = 0; // Track the cumulative index as we process delta.ops
+    delta.ops.forEach(op => {
+        if (op.retain) {
+            // Move the index by retain length
+            index += op.retain;
+        } else if (op.insert) {
+            // Calculate insertion length
+            const insertLength = typeof op.insert === 'string' ? op.insert.length : 1;
+
+            // Move all locks after the index forward by insert length
+            lockedRanges.forEach(lock => {
+                if (lock.index >= index) {
+                    lock.index += insertLength;
+                }
+            });
+
+            // Update index position after insert
+            index += insertLength;
+        } else if (op.delete) {
+            // Calculate delete length
+            const deleteLength = op.delete;
+
+            // Move all locks after the index backward by delete length
+            lockedRanges.forEach(lock => {
+                if (lock.index > index) {
+                    lock.index -= deleteLength;
+                }
+            });
+
+            // Index remains unchanged after delete
+        }
+    });
+    // console.log(lockedRanges, 123)
+    return lockedRanges;
 };
 
 // Apply deltas and update document in the database
@@ -58,7 +128,7 @@ const applyDeltasAndUpdateDocument = () => {
             // Apply accumulated deltas to document content
             documents[documentId] = applyDeltaToContent(document, documentDelta);
 
-            // console.log(documents[documentId], 123);
+            console.log(documents[documentId], 123);
 
             // console.log(`Document ${documentId} updated in database`);
         } catch (error) {
@@ -75,15 +145,17 @@ const applyDeltaToContent = (content, delta) => {
     // Create initial delta with content
     const editor = new Delta([{ insert: content }]);
 
-    // Compose with the input delta and extract text from ops
-    return editor.compose(delta).ops
-        .reduce((text, op) => {
-            if (typeof op.insert === 'string') {
-                return text + op.insert;
-            }
-            return text;
-        }, '');
+    // Compose with the input delta and extract text with newline preservation
+    return editor.compose(delta).ops.reduce((text, op) => {
+        if (typeof op.insert === 'string') {
+            // Add the string, which may contain newlines
+            console.log(op.insert, 'Added');
+            return text + op.insert;
+        }
+        return text;
+    }, '');
 };
+
 
 
 const joindocument = async (documentId, userId, socket) => {

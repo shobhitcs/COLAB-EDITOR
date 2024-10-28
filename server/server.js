@@ -32,7 +32,7 @@ io.on('connection', (socket) => {
 
   // Listen for content updates
   socket.on('documentChange', (data) => {
-    broadcast(data, socket);
+    broadcast(data, socket,io);
   });
 
   socket.on('lockSection', ({ documentId, range, userId }) => {
