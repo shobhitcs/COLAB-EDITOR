@@ -69,10 +69,10 @@ export const deleteDocument = createAsyncThunk(
           'x-auth-token': localStorage.getItem('token'),
         },
       });
-      console.log(id, 'on delete');
+      // console.log(id, 'on delete');
       return id;  // Returning the deleted document's ID
     } catch (err) {
-      console.log(err.response.data);
+      // console.log(err.response.data);
       return rejectWithValue(err.response.data);  // Handling error response
     }
   }
@@ -103,6 +103,7 @@ export const removeCollaborator = createAsyncThunk(
   'documents/removeCollaborator',
   async ({ documentId, username }, { rejectWithValue }) => {
     try {
+      // console.log('Removing collaborator', username);
       const res = await axios.delete(
         `http://localhost:5000/api/documents/${documentId}/collaborators/${username}`,
         {
@@ -111,7 +112,7 @@ export const removeCollaborator = createAsyncThunk(
           },
         }
       );
-      console.log(res.data);
+      // console.log(res.data);
       return res.data; // Return the updated document
     } catch (err) {
       // console.log(err.response.data,123);

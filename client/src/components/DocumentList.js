@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchDocuments, createDocument, deleteDocument, addCollaborators } from '../store/slices/documentSlice'; // Import shareDocument action
+import { fetchDocuments, createDocument, deleteDocument, addCollaborators, removeCollaborator } from '../store/slices/documentSlice'; // Import shareDocument action
 
 const DocumentList = () => {
   const dispatch = useDispatch();
@@ -22,6 +22,9 @@ const DocumentList = () => {
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] = useState(false);
   const [deleteRejectionModalOpen, setDeleteRejectionModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState('');
+  
+  const [modalText, setModalText] = useState('');
+  
 
   useEffect(() => {
     dispatch(fetchDocuments());
@@ -44,8 +47,9 @@ const DocumentList = () => {
     }
     else {
       setIsDeleteConfirmModalOpen(false); // Close confirmation modal after deletion
+      setModalText('You cannot delete other user\'s document');
       setDeleteRejectionModalOpen(true); // Close confirmation modal after deletion
-
+      
     }
   };
 
@@ -60,6 +64,24 @@ const DocumentList = () => {
     setIsShareModalOpen(false); // Close share modal after sharing
     setCollaboratorUsernames(''); // Reset input field
   };
+
+  const handleRemoveCollab = () => {
+    const usernamesArray = collaboratorUsernames.split(',').map(username => username.trim());
+    // console.log(usernamesArray[0])
+    if (usernamesArray[0] === "" || usernamesArray.length !== 1) {
+      // alert("Please enter only one username at a time.");
+      setIsShareModalOpen(false); // Close share modal after sharing
+      setCollaboratorUsernames(''); // Reset input field
+      setDeleteRejectionModalOpen(true); // Close
+      setModalText('You can remove only one collaborater at a time.');
+    }
+    else {
+      dispatch(removeCollaborator({ documentId: selectedDocumentId, username: usernamesArray[0] }));
+      setIsShareModalOpen(false); // Close share modal after sharing
+      setCollaboratorUsernames(''); // Reset input field
+    }
+
+  }
 
   // Handle key press event for create modal
   const handleKeyDown = (e) => {
@@ -125,7 +147,7 @@ const DocumentList = () => {
                   className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-full transition-transform transform hover:scale-105 mr-2"
                   aria-label={`Share document ${doc.title}`} style={{ fontFamily: "Maven Pro, sans-serif", }}
                 >
-                  Share
+                  Access
                 </button>
                 <button
                   onClick={(e) => {
@@ -182,12 +204,12 @@ const DocumentList = () => {
       {isShareModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{ fontFamily: "Barlow, sans-serif", }}>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Share Document</h2>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Manage Access</h2>
             <input
               type="text"
               value={collaboratorUsernames}
               onChange={(e) => setCollaboratorUsernames(e.target.value)}
-              onKeyDown={handleShareKeyDown} // Add event listener for key down
+              // onKeyDown={handleShareKeyDown} // Add event listener for key down
               placeholder="Enter usernames, separated by commas"
               className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
@@ -203,6 +225,12 @@ const DocumentList = () => {
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full"
               >
                 Share
+              </button>
+              <button
+                onClick={handleRemoveCollab}
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-full transition-transform transform hover:scale-105"
+              >
+                Remove
               </button>
             </div>
           </div>
@@ -237,7 +265,7 @@ const DocumentList = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{ fontFamily: "Barlow, sans-serif", }}>
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
-            <p>You cannot delete other users files.</p>
+            <p>{modalText}</p>
             <div className="flex justify-end space-x-4 mt-4">
               <button
                 onClick={() => setDeleteRejectionModalOpen(false)} // Close modal

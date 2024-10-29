@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Delta } from 'quill/core';
+import axios from 'axios';
 
 const DocumentEditor = () => {
   const [editorContent, setEditorContent] = useState('');
@@ -63,8 +64,25 @@ const DocumentEditor = () => {
     }
   }
 
-  const handleRunCode = () => {
+  const handleRunCode = async () => {
     // Handle Code running here
+    console.log('Code running here', editorContent);
+    try {
+      // console.log('Removing collaborator', username);
+      const res = await axios.post(
+        `http://localhost:5000/api/code/run`,
+        {code: editorContent, language: 'py'},
+        {
+          headers: {
+            'x-auth-token': localStorage.getItem('token'),
+          },
+        }
+      );
+      console.log(res.data);
+      // return res.data; // Return the updated document
+    } catch (err) {
+      // return rejectWithValue(err.response.data); // Handle error response
+    }
   }
 
   useEffect(() => {

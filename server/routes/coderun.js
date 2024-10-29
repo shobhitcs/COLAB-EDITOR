@@ -63,7 +63,7 @@ const TIMEOUT = 5000;
 // }
 router.post('/run', async (req, res) => {
     const { code, language } = req.body;
-
+    console.log(code,language);
     //Add main code here
 
     // // Validate inputs

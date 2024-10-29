@@ -24,15 +24,15 @@ router.post('/', [auth, [
     });
 
     const document = await newDocument.save();
-    
+
     // Fetch the owner's username
     const owner = await User.findById(req.user.id);
     const ownerUsername = owner ? owner.username : 'Unknown';
 
-    console.log(document);
-    res.json({...document.toObject(), ownerUsername});
+    // console.log(document);
+    res.json({ ...document.toObject(), ownerUsername });
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -66,7 +66,7 @@ router.get('/', auth, async (req, res) => {
 
     res.json(documentsWithUsers);
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -87,7 +87,7 @@ router.get('/:id', auth, async (req, res) => {
 
     res.json(document);
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Document not found' });
     }
@@ -124,7 +124,7 @@ router.put('/:id', [auth, [
     await document.save();
     res.json(document);
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Document not found' });
     }
@@ -135,7 +135,7 @@ router.put('/:id', [auth, [
 // Delete a document by ID
 router.delete('/:id', auth, async (req, res) => {
   try {
-    console.log(req.params.id);
+    // console.log(req.params.id);
     const document = await Document.findById(req.params.id);
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
@@ -151,7 +151,7 @@ router.delete('/:id', auth, async (req, res) => {
 
     res.json({ message: 'Document removed' });
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Document not found' });
     }
@@ -190,94 +190,109 @@ router.post('/:id/collaborators', auth, async (req, res) => {
       document.collaborators.push(...filteredNewCollaborators);
       await document.save();
     }
+    // console.log('Added new collaborators',document);
 
     res.json(document); // Return the updated document
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
 
-router.post('/:id/share', [
-  auth,
-  [
-    check('email', 'Valid email is required').isEmail(),
-    check('permissions', 'Valid permission level is required').isIn(['view', 'edit'])
-  ]
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+// router.post('/:id/share', [
+//   auth,
+//   [
+//     check('email', 'Valid email is required').isEmail(),
+//     check('permissions', 'Valid permission level is required').isIn(['view', 'edit'])
+//   ]
+// ], async (req, res) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(400).json({ errors: errors.array() });
+//   }
 
+//   try {
+//     const document = await Document.findById(req.params.id);
+//     if (!document) {
+//       return res.status(404).json({ message: 'Document not found' });
+//     }
+
+//     if (document.owner.toString() !== req.user.id) {
+//       return res.status(403).json({ message: 'Only the document owner can share' });
+//     }
+
+//     const userToShare = await User.findOne({ email: req.body.email });
+//     if (!userToShare) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+
+//     const existingCollaborator = document.collaborators.find(
+//       collab => collab.user.toString() === userToShare._id.toString()
+//     );
+
+//     if (existingCollaborator) {
+//       existingCollaborator.permissions = req.body.permissions;
+//     } else {
+//       document.collaborators.push({
+//         user: userToShare._id,
+//         permissions: req.body.permissions
+//       });
+//     }
+
+//     document.updatedAt = new Date();
+//     await document.save();
+
+//     const updatedDocument = await Document.findById(req.params.id)
+//       .populate('collaborators.user', ['username', 'email']);
+
+//     res.json(updatedDocument);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server Error');
+//   }
+// });
+
+router.delete('/:id/collaborators/:username', auth, async (req, res) => {
   try {
+    // console.log('backing');
+    // Find the document by ID
     const document = await Document.findById(req.params.id);
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
     }
 
-    if (document.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Only the document owner can share' });
-    }
-
-    const userToShare = await User.findOne({ email: req.body.email });
-    if (!userToShare) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const existingCollaborator = document.collaborators.find(
-      collab => collab.user.toString() === userToShare._id.toString()
-    );
-
-    if (existingCollaborator) {
-      existingCollaborator.permissions = req.body.permissions;
-    } else {
-      document.collaborators.push({
-        user: userToShare._id,
-        permissions: req.body.permissions
-      });
-    }
-
-    document.updatedAt = new Date();
-    await document.save();
-
-    const updatedDocument = await Document.findById(req.params.id)
-      .populate('collaborators.user', ['username', 'email']);
-
-    res.json(updatedDocument);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
-router.delete('/:id/share/:userId', auth, async (req, res) => {
-  try {
-    const document = await Document.findById(req.params.id);
-    if (!document) {
-      return res.status(404).json({ message: 'Document not found' });
-    }
-
+    // Check if the requester is the owner of the document
     if (document.owner.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Only the document owner can remove collaborators' });
     }
 
+    // Find the user ID associated with the username provided in the route
+    const collaboratorUser = await User.findOne({ username: req.params.username });
+    if (!collaboratorUser) {
+      return res.status(404).json({ message: 'Collaborator not found' });
+    }
+
+    // Filter out the collaborator to be removed
     document.collaborators = document.collaborators.filter(
-      collab => collab.user.toString() !== req.params.userId
+      collab => collab.user.toString() !== collaboratorUser._id.toString()
     );
 
+    // Update the document and save changes
     document.updatedAt = new Date();
     await document.save();
 
+    // Return the updated document details
     const updatedDocument = await Document.findById(req.params.id)
-      .populate('collaborators.user', ['username', 'email']);
-
+      .populate('owner', 'username')
+      .populate('collaborators.user', 'username');
+    // console.log('Rempve',updatedDocument);
     res.json(updatedDocument);
   } catch (err) {
-    console.error(err.message);
+    // console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
+
 
 
 // // Remove a collaborator from a document
