@@ -128,11 +128,11 @@ const applyDeltasAndUpdateDocument = () => {
             // Apply accumulated deltas to document content
             documents[documentId] = applyDeltaToContent(document, documentDelta);
 
-            console.log(documents[documentId], 123);
+            // console.log(documents[documentId], 123);
 
             // console.log(`Document ${documentId} updated in database`);
         } catch (error) {
-            console.error(`Error updating document ${documentId}:`, error);
+            // console.error(`Error updating document ${documentId}:`, error);
         }
     }
 
@@ -149,7 +149,7 @@ const applyDeltaToContent = (content, delta) => {
     return editor.compose(delta).ops.reduce((text, op) => {
         if (typeof op.insert === 'string') {
             // Add the string, which may contain newlines
-            console.log(op.insert, 'Added');
+            // console.log(op.insert, 'Added');
             return text + op.insert;
         }
         return text;
@@ -192,7 +192,7 @@ const joindocument = async (documentId, userId, socket) => {
             socket.emit('error', 'You do not have access to this document');
         }
     } catch (error) {
-        console.error('Error joining document:', error);
+        // console.error('Error joining document:', error);
         socket.emit('error', 'An error occurred while joining the document');
     }
 }

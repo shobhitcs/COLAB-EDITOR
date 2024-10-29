@@ -24,7 +24,13 @@ router.post('/', [auth, [
     });
 
     const document = await newDocument.save();
-    res.json(document);
+    
+    // Fetch the owner's username
+    const owner = await User.findById(req.user.id);
+    const ownerUsername = owner ? owner.username : 'Unknown';
+
+    console.log(document);
+    res.json({...document.toObject(), ownerUsername});
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

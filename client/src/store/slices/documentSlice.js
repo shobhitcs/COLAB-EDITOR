@@ -69,8 +69,10 @@ export const deleteDocument = createAsyncThunk(
           'x-auth-token': localStorage.getItem('token'),
         },
       });
+      console.log(id, 'on delete');
       return id;  // Returning the deleted document's ID
     } catch (err) {
+      console.log(err.response.data);
       return rejectWithValue(err.response.data);  // Handling error response
     }
   }
@@ -112,7 +114,7 @@ export const removeCollaborator = createAsyncThunk(
       console.log(res.data);
       return res.data; // Return the updated document
     } catch (err) {
-      console.log(err.response.data,123);
+      // console.log(err.response.data,123);
       return rejectWithValue(err.response.data); // Handle error response
     }
   }
@@ -133,6 +135,7 @@ const documentSlice = createSlice({
         state.loading = true;  // Start loading when request is sent
       })
       .addCase(fetchDocuments.fulfilled, (state, action) => {
+        // console.log(action.payload,' all documents fetched')
         state.documents = action.payload;  // Save fetched documents to state
         state.loading = false;  // Stop loading when data is fetched
       })
@@ -159,6 +162,7 @@ const documentSlice = createSlice({
         state.loading = true;  // Start loading when request is sent
       })
       .addCase(createDocument.fulfilled, (state, action) => {
+        // console.log(action.payload, 'added')
         state.documents.push(action.payload);  // Add new document to state
         state.loading = false;  // Stop loading when document is created
       })
@@ -211,7 +215,7 @@ const documentSlice = createSlice({
     //   state.error = action.payload; // Store the error in the state
     //   state.loading = false; // Stop loading when there's an error
     // });
-},
+  },
 });
 
 // Exporting action creators and reducer

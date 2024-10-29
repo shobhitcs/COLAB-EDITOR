@@ -11,6 +11,8 @@ const DocumentEditor = () => {
   const [lockedRanges, setLockedRanges] = useState([]); // Track locked sections
   const [socket, setSocket] = useState(null);
   const quillRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalText, setIsModalText] = useState('');
 
   const userId = useSelector(state => state.auth.user?._id);
   const { id: documentId } = useParams();
@@ -34,14 +36,18 @@ const DocumentEditor = () => {
         });
 
         if (hasOverlap) {
-          alert('Selected range overlaps with an already locked section. Please select a different range.');
+          setIsModalText('Selected range overlaps with an already locked section. Please select a different range.');
+          setIsModalOpen(true);
+          // alert('Selected range overlaps with an already locked section. Please select a different range.');
         } else {
           // Lock the selected range if there's no overlap
           socket.emit('lockSection', { documentId, range, userId });
           // console.log('Range locked:', range);
         }
       } else {
-        alert('Please select a valid range of text to lock.');
+        setIsModalText('Please select a valid range of text to lock.');
+        setIsModalOpen(true);
+        // alert('Please select a valid range of text to lock.');
       }
     }
   };
@@ -51,10 +57,14 @@ const DocumentEditor = () => {
     if (quillRef.current) {
       const editor = quillRef.current.getEditor();
       const range = editor.getSelection();
-      console.log('Selected range to unlock:', range);
+      // console.log('Selected range to unlock:', range);
 
       socket.emit('unlockSection', { documentId, range, userId });
     }
+  }
+
+  const handleRunCode = () => {
+    // Handle Code running here
   }
 
   useEffect(() => {
@@ -201,7 +211,9 @@ const DocumentEditor = () => {
           setEditorContent(originalContent);
           // console.log('text should not change')
           // Display an alert indicating the section is locked
-          alert("This section is already locked by another user. Your changes have been reverted.");
+          setIsModalText("This section is already locked by another user. Your changes have been reverted.")
+          setIsModalOpen(true);
+          // alert("This section is already locked by another user. Your changes have been reverted.");
         }
         else {
           if (socket && source === 'user') {
@@ -272,7 +284,23 @@ const DocumentEditor = () => {
 
 
   return (
-    <div style={{ height: '80vh', padding: '10px 50px' }}>
+    <div style={{ height: '80vh', padding: '10px 50px', fontFamily: "Ubuntu, sans-serif", }}>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md" style={{ fontFamily: "Barlow, sans-serif", }}>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
+            <p>{isModalText}</p>
+            <div className="flex justify-end space-x-4 mt-4">
+              <button
+                onClick={() => setIsModalOpen(false)} // Close modal
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-full"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ margin: '10px 0', display: 'flex', alignItems: 'center' }}>
 
         <div style={{ margin: '0px' }}>
@@ -307,16 +335,29 @@ const DocumentEditor = () => {
         {/* Displaying user's lock color */}
         <span style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
           <span style={{ width: '20px', height: '20px', backgroundColor: userLockColor, marginRight: '8px', border: '1px solid gray' }} />
-          <span style={{fontFamily: "Ubuntu, sans-serif",}}>Your Lock</span>
+          <span style={{ fontFamily: "Ubuntu, sans-serif", }}>Your Lock</span>
         </span>
 
         {/* Displaying other users' lock color */}
         <span style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
           <span style={{ width: '20px', height: '20px', backgroundColor: otherUserLockColor, marginRight: '8px', border: '1px solid gray' }} />
-          <span style={{fontFamily: "Ubuntu, sans-serif",}}>Other User's Lock</span>
+          <span style={{ fontFamily: "Ubuntu, sans-serif", }}>Other User's Lock</span>
         </span>
 
-        {/* Buttons for locking and unlocking sections */}
+        <button
+          onClick={handleRunCode}
+          style={{
+            marginLeft: '20px',
+            padding: '8px 16px',
+            backgroundColor: '#54C392',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          ▶️ Run Code
+        </button>
       </div>
       <ReactQuill
         ref={quillRef}
