@@ -14,6 +14,11 @@ const DocumentEditor = () => {
   const quillRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalText, setIsModalText] = useState('');
+  const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [isCodeModalText, setIsCodeModalText] = useState('');
+  const [codeOutput, setCodeOutput] = useState('');
+  const [isOutputModalOpen, setIsOutputModalOpen] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   const userId = useSelector(state => state.auth.user?._id);
   const { id: documentId } = useParams();
@@ -23,7 +28,7 @@ const DocumentEditor = () => {
   };
 
   const handleLockSection = () => {
-    // console.log('Attempting to lock section');
+    console.log('Attempting to lock section');
     if (quillRef.current) {
       const editor = quillRef.current.getEditor();
       const range = editor.getSelection();
@@ -46,7 +51,7 @@ const DocumentEditor = () => {
           // console.log('Range locked:', range);
         }
       } else {
-        setIsModalText('Please select a valid range of text to lock.');
+        setIsCodeModalText('Please select a valid range of text to lock.');
         setIsModalOpen(true);
         // alert('Please select a valid range of text to lock.');
       }
@@ -65,25 +70,49 @@ const DocumentEditor = () => {
   }
 
   const handleRunCode = async () => {
-    // Handle Code running here
-    console.log('Code running here', editorContent);
-    try {
-      // console.log('Removing collaborator', username);
-      const res = await axios.post(
-        `http://localhost:5000/api/code/run`,
-        {code: editorContent, language: 'py'},
-        {
-          headers: {
-            'x-auth-token': localStorage.getItem('token'),
-          },
-        }
-      );
-      console.log(res.data);
-      // return res.data; // Return the updated document
-    } catch (err) {
-      // return rejectWithValue(err.response.data); // Handle error response
+    if (!quillRef.current) return;
+    
+    const editor = quillRef.current.getEditor();
+    const range = editor.getSelection();
+    
+    if (!range || range.length === 0) {
+      setIsCodeModalText('Please select the code you want to run.');
+      setIsCodeModalOpen(true);
+      return;
     }
-  }
+
+    // Get the selected text
+    const selectedText = editor.getText(range.index, range.length);
+    setIsExecuting(true);
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/code/run', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: selectedText,
+          language: 'py'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.details || 'Failed to execute code');
+      }
+
+      setCodeOutput(data.output || 'Code executed successfully with no output');
+      setIsOutputModalOpen(true);
+    } catch (error) {
+      setCodeOutput(`Error: ${error.message}`);
+      setIsOutputModalOpen(true);
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
 
   useEffect(() => {
     const s = io('http://localhost:9000');
@@ -316,6 +345,24 @@ const DocumentEditor = () => {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {isOutputModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl" style={{ fontFamily: "Barlow, sans-serif" }}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800">Code Output</h2>
+              <button
+                onClick={() => setIsOutputModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <pre className="bg-gray-100 p-4 rounded-lg overflow-auto max-h-96 font-mono text-sm">
+              {codeOutput}
+            </pre>
           </div>
         </div>
       )}
